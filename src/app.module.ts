@@ -4,14 +4,13 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 
 // ROUTES
-import { SumController } from './controllers/sum.controller';
-import { SumDto } from './DTO/sum.dto';
-import { CounterController } from './controllers/counter.controller';
-import { CounterService } from './services/counter.service';
+import { UserController } from './user/user.controller';
+import { UserService } from './user/user.service';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [ConfigModule.forRoot()],
-  controllers: [AppController, SumController, CounterController],
-  providers: [AppService, SumDto, CounterService],
+  controllers: [AppController, UserController],
+  providers: [AppService, UserService, PrismaService],
 })
 export class AppModule {}
