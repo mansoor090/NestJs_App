@@ -1,32 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthPayloadDto } from './dto/authPayloadDto';
 import { JwtService } from '@nestjs/jwt';
-
-const fakeUsers = [
-  {
-    id: 1,
-    username: 'test',
-    password: '123',
-  },
-  {
-    id: 2,
-    username: 'jack',
-    password: 'password123',
-  },
-];
+import { PrismaService } from 'src/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private prisma: PrismaService,
+  ) {}
 
-  validateUser({ username, password }: AuthPayloadDto) {
-    const findUser = fakeUsers.find((user) => user.username === username);
+  async validateUser({ email, password }: AuthPayloadDto) {
+    const findUser = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
+
     if (!findUser) {
-      return null;
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    if (password === findUser.password) {
-      const { password, ...user } = findUser;
-      return this.jwtService.sign(user);
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      findUser.passwordHash,
+    );
+
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const { passwordHash, ...user } = findUser;
+    try {
+      const jwt = this.jwtService.sign(user);
+      return { ...user, jwt };
+    } catch (e) {
+      console.error(e);
+      throw new HttpException(
+        'Something went wrong at JWT',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

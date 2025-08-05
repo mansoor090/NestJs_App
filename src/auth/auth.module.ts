@@ -6,16 +6,17 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import * as process from 'node:process';
+import { PrismaService } from '../prisma.service';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: process.env['JWT_Secret '],
-      signOptions: { algorithm: 'ES256', expiresIn: '1h' },
+      secret: process.env.JWT_SECRET,
+      signOptions: { algorithm: 'HS256', expiresIn: '1h' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, PrismaService],
   controllers: [AuthController],
 })
 export class AuthModule {}

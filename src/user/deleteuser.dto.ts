@@ -1,10 +1,6 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class DeleteUserDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Name is required' })
-  name: string;
-
   @IsEmail({}, { message: 'Invalid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;

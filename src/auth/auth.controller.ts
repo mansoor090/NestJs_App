@@ -1,17 +1,16 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalGuard } from './guard/local.guard';
 import { JwtGuard } from './guard/jwt.guard';
 import { Request } from 'express';
+import { AuthPayloadDto } from './dto/authPayloadDto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @UseGuards(LocalGuard)
-  login(@Req() req: Request) {
-    return req.user;
+  login(@Body() payload: AuthPayloadDto) {
+    return this.authService.validateUser(payload);
   }
 
   @Get('status')

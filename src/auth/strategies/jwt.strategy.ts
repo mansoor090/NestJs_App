@@ -9,13 +9,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'abc123$',
+      secretOrKey: process.env.JWT_Secret as string,
     });
   }
 
   validate(payload: any) {
-    console.log('Inslide JWT Strategy');
+    console.log('Inside JWT Strategy');
     console.log(payload);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return payload;
   }
 }
