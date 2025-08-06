@@ -1,13 +1,8 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/authPayloadDto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
-import * as bcrypt from 'bcrypt';
+import { comparePassword } from 'src/Utils/hash.util';
 
 @Injectable()
 export class AuthService {
@@ -25,25 +20,19 @@ export class AuthService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const isValidPassword = await bcrypt.compare(
-      password,
-      findUser.passwordHash,
-    );
-
+    const isValidPassword = await comparePassword(password, findUser.passwordHash);
     if (!isValidPassword) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...user } = findUser;
     try {
       const jwt = this.jwtService.sign(user);
       return { ...user, jwt };
     } catch (e) {
       console.error(e);
-      throw new HttpException(
-        'Something went wrong at JWT',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Something went wrong at JWT', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
