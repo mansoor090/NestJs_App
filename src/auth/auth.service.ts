@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/authPayloadDto';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma.service';
@@ -20,13 +20,14 @@ export class AuthService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const isValidPassword = await comparePassword(password, findUser.passwordHash);
+    const isValidPassword = await comparePassword(password, findUser.password);
     if (!isValidPassword) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new HttpException('Invalid Credentials', HttpStatus.UNAUTHORIZED);
+      // throw new UnauthorizedException('Invalid credentials');
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...user } = findUser;
+    const { password: _password, ...user } = findUser;
     try {
       const jwt = this.jwtService.sign(user);
       return { ...user, jwt };

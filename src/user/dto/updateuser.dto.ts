@@ -8,4 +8,8 @@ export class UpdateuserDto {
   @IsEmail({}, { message: 'Invalid email address' })
   @IsNotEmpty({ message: 'email is required' })
   email: string;
+
+  @IsEmail({}, { message: 'Invalid original email address' })
+  @IsNotEmpty({ message: 'email is required' })
+  originalEmail: string; // Used to identify which user to update
 }
