@@ -1,6 +1,9 @@
+import { UserRole } from '@prisma/client';
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
@@ -16,5 +19,10 @@ export class CreateUserDto {
 
   @IsStrongPassword()
   @IsNotEmpty({ message: 'Password is required' })
-  passwordHash: string;
+  password: string;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
 }

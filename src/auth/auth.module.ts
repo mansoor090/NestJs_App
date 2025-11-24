@@ -6,7 +6,6 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import * as process from 'node:process';
-import { PrismaService } from '../prisma.service';
 
 @Module({
   imports: [
@@ -16,7 +15,7 @@ import { PrismaService } from '../prisma.service';
       signOptions: { algorithm: 'HS256', expiresIn: '1h' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, PrismaService],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

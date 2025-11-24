@@ -13,10 +13,111 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum UserRole {
+  ADMIN
+  RESIDENT
+}
+
+enum ProductType {
+  MONTHLY_BILL
+  LATE_SURCHARGE
+}
+
+// MODELS
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String // hashed password
+  role      UserRole @default(RESIDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  houses       House[]
+  invoices     Invoice[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model House {
+  id        String   @id @default(uuid())
+  houseNo   String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // foreignkeys
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  // relations
+  invoices Invoice[]
+
+  @@unique([houseNo, userId])
+  @@map("houses")
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  userId    String
+  houseId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // foreignkeys
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  house House @relation(fields: [houseId], references: [id], onDelete: Restrict)
+
+  // relations
+  items       Item[]
+  transaction Transaction?
+
+  @@map("invoices")
+}
+
+model Item {
+  id          String      @id @default(uuid())
+  invoiceId   String
+  productType ProductType
+  amount      Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  @@map("invoice_items")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  invoiceId       String            @unique
+  status          TransactionStatus
+  amount          Float
+  stripeSessionId String?
+  completedAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // foreignkeys
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  @@map("transactions")
+}
+
+model Settings {
+  id        String      @id @default(uuid())
+  key       ProductType @unique
+  value     String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("settings")
 }
