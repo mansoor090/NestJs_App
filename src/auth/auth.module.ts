@@ -6,6 +6,8 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
+console.log('JWT 22=>', process.env.JWT_Secret);
+
 @Module({
   imports: [
     PassportModule,
