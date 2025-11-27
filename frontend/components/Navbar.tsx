@@ -10,7 +10,11 @@ export default function Navbar() {
 
   const handleDashboardClick = () => {
     if (isAuthenticated) {
-      router.push('/dashboard')
+      if (user?.role === 'ADMIN') {
+        router.push('/dashboard')
+      } else {
+        router.push('/user-dashboard')
+      }
     }
   }
 
@@ -30,7 +34,7 @@ export default function Navbar() {
           Test Company
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {isAuthenticated && user?.role === 'ADMIN' && (
+          {isAuthenticated && (
             <Button
               color="inherit"
               onClick={handleDashboardClick}
@@ -53,7 +57,7 @@ export default function Navbar() {
               Login
             </Button>
           )}
-          
+
         </Box>
 
       </Toolbar>
