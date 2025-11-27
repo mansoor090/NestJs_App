@@ -17,7 +17,10 @@ import { InvoicesModule } from './invoice/invoices.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env.production',
+    }),
     ScheduleModule.forRoot(),
     StripeModule,
     AuthModule,
