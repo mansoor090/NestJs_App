@@ -1,98 +1,727 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Housing Management & Billing System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<div align="center">
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=for-the-badge&logo=stripe&logoColor=white)
 
-## Description
+**A full-stack property management system with automated billing, payment processing, and role-based access control**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Documentation](#-documentation)
 
-## Project setup
+</div>
 
-```bash
-$ npm install
+---
+
+## 📋 Table of Contents
+
+- [About the Project](#-about-the-project)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [Running the Application](#-running-the-application)
+- [Project Structure](#-project-structure)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🏢 About the Project
+
+This is a comprehensive **Housing Society Management & Billing System** designed to streamline residential property management operations. The system automates invoice generation, manages resident accounts, processes payments through Stripe, and provides role-based dashboards for both administrators and residents.
+
+### Key Use Cases
+
+- **Property Administrators**: Manage houses, residents, generate invoices, and track payments
+- **Residents**: View invoices, manage their houses, and make secure payments online
+- **Automated Billing**: Monthly invoices are generated automatically with configurable amounts
+- **Late Fee Management**: Automatic surcharge calculation for overdue payments
+- **Payment Processing**: Secure payment processing via Stripe integration
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Authorization
+- JWT-based authentication with Passport.js
+- Role-based access control (RBAC) with Admin and Resident roles
+- Secure password hashing with bcrypt
+- Protected API endpoints with guards
+
+### 🏠 House Management
+- Create, update, and delete house records
+- Associate houses with residents
+- Admin-only house management endpoints
+- Resident-specific house viewing
+
+### 📄 Invoice Management
+- Automated monthly invoice generation via scheduled tasks
+- Configurable monthly bill amounts
+- Automatic late surcharge calculation (applied after 5 days)
+- Invoice tracking and history
+- Resident-specific invoice viewing
+
+### 💳 Payment Processing
+- Stripe payment integration
+- Secure payment session creation
+- Webhook handling for payment status updates
+- Transaction status tracking (PENDING, COMPLETED, FAILED)
+- Payment history and receipts
+
+### 👥 User Management
+- Admin-only user creation, update, and deletion
+- User role assignment (ADMIN/RESIDENT)
+- User profile management
+
+### 🎨 Frontend Features
+- Modern UI with Material-UI and Tailwind CSS
+- Responsive design for all devices
+- Dark/light theme support
+- Loading states and animations
+- User-friendly dashboards for both roles
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+- **Framework**: [NestJS](https://nestjs.com/) - Progressive Node.js framework
+- **Language**: TypeScript
+- **ORM**: [Prisma](https://www.prisma.io/) - Next-generation ORM
+- **Database**: PostgreSQL
+- **Authentication**: JWT, Passport.js (Local & JWT strategies)
+- **Validation**: class-validator, class-transformer
+- **Scheduling**: @nestjs/schedule for automated tasks
+- **Payment**: Stripe SDK
+
+### Frontend
+- **Framework**: [Next.js](https://nextjs.org/) 16.0.1 - React framework
+- **UI Library**: Material-UI (MUI) v7
+- **Styling**: Tailwind CSS v4, Emotion
+- **HTTP Client**: Axios
+- **Payment**: Stripe React components
+
+### Development Tools
+- **Linting**: ESLint
+- **Formatting**: Prettier
+- **Testing**: Jest
+- **Build Tool**: SWC
+
+---
+
+## 🏗 Architecture
+
+This project follows a **monorepo structure** with clear separation between backend and frontend:
+
+```
+project_test/
+├── src/                    # NestJS backend application
+│   ├── auth/              # Authentication module
+│   ├── user/              # User management module
+│   ├── house/             # House management module
+│   ├── invoice/           # Invoice management module
+│   ├── transactions/     # Payment processing module
+│   ├── stripe/            # Stripe integration module
+│   └── prisma/            # Prisma service
+├── frontend/              # Next.js frontend application
+│   ├── app/               # Next.js app router pages
+│   ├── components/        # React components
+│   ├── hooks/             # Custom React hooks
+│   └── lib/               # Utility functions
+├── prisma/                # Database schema and migrations
+└── test/                  # E2E tests
 ```
 
-## Compile and run the project
+### Key Architectural Decisions
+
+- **Modular Design**: Backend organized into feature modules (auth, user, house, invoice, etc.)
+- **Guards & Decorators**: Custom guards for authentication and authorization
+- **DTOs**: Data Transfer Objects for type-safe API communication
+- **Service Layer**: Business logic separated into service classes
+- **Scheduled Tasks**: Automated invoice generation using NestJS scheduler
+
+---
+
+## 📦 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v18.x or higher)
+- **npm** or **yarn** package manager
+- **PostgreSQL** (v12 or higher)
+- **Stripe Account** (for payment processing)
+- **Git** (for cloning the repository)
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the Repository
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone <your-repository-url>
+cd project_test
 ```
 
-## Run tests
+### 2. Install Dependencies
+
+Install backend dependencies:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Install frontend dependencies:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cd frontend
+npm install
+cd ..
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 3. Database Setup
 
-## Resources
+Create a PostgreSQL database:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+# Using psql
+createdb property_management
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Or using SQL
+psql -U postgres
+CREATE DATABASE property_management;
+```
 
-## Support
+### 4. Environment Variables
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Create a `.env` file in the root directory:
 
-## Stay in touch
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/property_management?schema=public"
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# JWT
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+JWT_EXPIRES_IN="7d"
 
-## License
+# Stripe
+STRIPE_SECRET_KEY="sk_test_your_stripe_secret_key"
+STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# Server
+PORT=3001
+FRONTEND_URL="http://localhost:3000"
+```
+
+### 5. Database Migration
+
+Run Prisma migrations to set up the database schema:
+
+```bash
+npx prisma migrate dev
+```
+
+### 6. Seed the Database
+
+Populate the database with initial data (including admin user):
+
+```bash
+npm run seed
+```
+
+The seed script creates:
+- An admin user (email: `admin@example.com`, password: `admin123`)
+- Sample residents and houses
+- Initial settings for monthly bills and surcharges
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `JWT_SECRET` | Secret key for JWT token signing | Yes |
+| `JWT_EXPIRES_IN` | JWT token expiration time | No (default: 7d) |
+| `STRIPE_SECRET_KEY` | Stripe API secret key | Yes |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | Yes |
+| `PORT` | Backend server port | No (default: 3001) |
+| `FRONTEND_URL` | Frontend URL for CORS | No (default: http://localhost:3000) |
+
+### Database Configuration
+
+The application uses Prisma ORM. Key configuration files:
+- `prisma/schema.prisma` - Database schema definition
+- `prisma/migrations/` - Database migration files
+
+### Stripe Configuration
+
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Get your API keys from the Stripe Dashboard
+3. Set up a webhook endpoint pointing to `http://your-domain/transactions/webhook`
+4. Copy the webhook signing secret to `STRIPE_WEBHOOK_SECRET`
+
+### CORS Configuration
+
+CORS is configured in `src/main.ts`. Update the `FRONTEND_URL` environment variable to match your frontend deployment URL.
+
+---
+
+## 🏃 Running the Application
+
+### Development Mode
+
+#### Backend Server
+
+```bash
+# Start backend in development mode (with hot reload)
+npm run start:dev
+
+# Backend will run on http://localhost:3001
+```
+
+#### Frontend Server
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Start frontend in development mode
+npm run dev
+
+# Frontend will run on http://localhost:3000
+```
+
+### Production Build
+
+#### Build Backend
+
+```bash
+npm run build
+npm run start:prod
+```
+
+#### Build Frontend
+
+```bash
+cd frontend
+npm run build
+npm run start
+```
+
+### Available Scripts
+
+**Backend:**
+- `npm run start` - Start production server
+- `npm run start:dev` - Start development server with watch mode
+- `npm run start:debug` - Start with debug mode
+- `npm run build` - Build the application
+- `npm run test` - Run unit tests
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run seed` - Seed the database
+
+**Frontend:**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+---
+
+## 📁 Project Structure
+
+```
+project_test/
+├── src/                          # Backend source code
+│   ├── auth/                    # Authentication module
+│   ├── user/                    # User management module
+│   ├── house/                   # House management module
+│   ├── invoice/                 # Invoice management module
+│   ├── transactions/            # Payment processing module
+│   ├── stripe/                  # Stripe integration module
+│   ├── Utils/                   # Utility functions
+│   ├── app.module.ts            # Root application module
+│   ├── main.ts                  # Application entry point
+│   └── prisma.service.ts        # Prisma service
+├── frontend/                    # Frontend application
+│   ├── app/                     # Next.js app directory
+│   │   ├── dashboard/          # Admin dashboard
+│   │   ├── user-dashboard/      # Resident dashboard
+│   │   ├── login/              # Login page
+│   │   ├── layout.tsx          # Root layout
+│   │   └── page.tsx             # Home page
+│   ├── components/              # React components
+│   │   ├── Navbar.tsx          # Navigation component
+│   │   ├── loader.tsx           # Loading component
+│   │   └── ThemeProvider.tsx    # Theme provider
+│   ├── hooks/                   # Custom hooks
+│   │   ├── useAuth.ts          # Authentication hook
+│   │   └── useNavigationLoader.tsx
+│   └── lib/                     # Utilities
+│       ├── api.ts               # API client configuration
+│       └── emotion-registry.tsx
+├── prisma/                      # Database
+│   ├── migrations/             # Migration files
+│   ├── schema.prisma           # Prisma schema
+│   └── seed.ts                 # Database seeder
+└── package.json                 # Root package.json
+```
+
+---
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+
+#### Login
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "User Name",
+    "role": "RESIDENT"
+  }
+}
+```
+
+#### Check Auth Status
+```http
+GET /auth/status
+Authorization: Bearer <token>
+```
+
+---
+
+### User Management Endpoints (Admin Only)
+
+#### Get All Users
+```http
+GET /admin/users/all
+Authorization: Bearer <admin-token>
+```
+
+#### Create User
+```http
+POST /admin/users/create
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "RESIDENT"
+}
+```
+
+#### Update User
+```http
+PUT /admin/users/update
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "id": "user-uuid",
+  "name": "John Updated",
+  "email": "john.updated@example.com"
+}
+```
+
+#### Delete User
+```http
+DELETE /admin/users/delete
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "id": "user-uuid"
+}
+```
+
+---
+
+### House Management Endpoints
+
+#### Get All Houses (Admin Only)
+```http
+GET /admin/houses/all
+Authorization: Bearer <admin-token>
+```
+
+#### Create House (Admin Only)
+```http
+POST /admin/houses/create
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "houseNo": "A-101",
+  "userId": "user-uuid"
+}
+```
+
+#### Get User Houses (Resident)
+```http
+GET /user/houses
+Authorization: Bearer <resident-token>
+```
+
+---
+
+### Invoice Endpoints (Resident)
+
+#### Get User Invoices
+```http
+GET /user/invoices
+Authorization: Bearer <resident-token>
+```
+
+#### Get Invoice by ID
+```http
+GET /user/invoices/:id
+Authorization: Bearer <resident-token>
+```
+
+---
+
+### Transaction Endpoints
+
+#### Create Payment Session
+```http
+POST /transactions/create-session
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "invoiceId": "invoice-uuid"
+}
+```
+
+**Response:**
+```json
+{
+  "sessionId": "cs_test_...",
+  "url": "https://checkout.stripe.com/..."
+}
+```
+
+#### Stripe Webhook
+```http
+POST /transactions/webhook
+Stripe-Signature: <signature>
+Content-Type: application/json
+
+<stripe-event-data>
+```
+
+---
+
+## 🗄 Database Schema
+
+### Key Models
+
+#### User
+- `id` (UUID) - Primary key
+- `name` (String)
+- `email` (String, unique)
+- `password` (String, hashed)
+- `role` (UserRole: ADMIN | RESIDENT)
+- `createdAt`, `updatedAt` (DateTime)
+
+#### House
+- `id` (UUID) - Primary key
+- `houseNo` (String)
+- `userId` (UUID) - Foreign key to User
+- Unique constraint on `(houseNo, userId)`
+
+#### Invoice
+- `id` (UUID) - Primary key
+- `userId` (UUID) - Foreign key to User
+- `houseId` (UUID) - Foreign key to House
+- `items` - One-to-many with Item
+- `transaction` - One-to-one with Transaction
+
+#### Item
+- `id` (UUID) - Primary key
+- `invoiceId` (UUID) - Foreign key to Invoice
+- `productType` (ProductType: MONTHLY_BILL | LATE_SURCHARGE)
+- `amount` (Float)
+
+#### Transaction
+- `id` (UUID) - Primary key
+- `userId` (UUID) - Foreign key to User
+- `invoiceId` (UUID, unique) - Foreign key to Invoice
+- `status` (TransactionStatus: PENDING | COMPLETED | FAILED)
+- `amount` (Float)
+- `stripeSessionId` (String, optional)
+- `completedAt` (DateTime, optional)
+
+#### Settings
+- `id` (UUID) - Primary key
+- `key` (ProductType, unique)
+- `value` (String) - Configurable amount
+
+### Relationships
+
+- User → Houses (One-to-Many)
+- User → Invoices (One-to-Many)
+- User → Transactions (One-to-Many)
+- House → Invoices (One-to-Many)
+- Invoice → Items (One-to-Many)
+- Invoice → Transaction (One-to-One)
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+
+```bash
+npm run test
+```
+
+### E2E Tests
+
+```bash
+npm run test:e2e
+```
+
+### Test Coverage
+
+```bash
+npm run test:cov
+```
+
+### Test Structure
+
+- Unit tests: `*.spec.ts` files alongside source files
+- E2E tests: Located in `test/` directory
+- Test configuration: `jest.config.js` and `test/jest-e2e.json`
+
+---
+
+## 🚢 Deployment
+
+### Environment Setup
+
+1. Set up production PostgreSQL database
+2. Configure environment variables in your hosting platform
+3. Set up Stripe webhook endpoint in production
+4. Update `FRONTEND_URL` to production frontend URL
+
+### Backend Deployment
+
+The backend can be deployed to:
+- **Heroku**: Use Node.js buildpack
+- **AWS**: EC2, ECS, or Lambda
+- **DigitalOcean**: App Platform or Droplets
+- **Railway**: Direct deployment from Git
+- **Vercel**: Serverless functions
+
+### Frontend Deployment
+
+The frontend can be deployed to:
+- **Vercel**: Recommended for Next.js (automatic deployments)
+- **Netlify**: Static site hosting
+- **AWS Amplify**: Full-stack deployment
+- **Any static hosting**: After `npm run build`
+
+### Database Migrations
+
+Run migrations in production:
+
+```bash
+npx prisma migrate deploy
+```
+
+### Security Considerations
+
+- Use strong `JWT_SECRET` in production
+- Enable HTTPS for all endpoints
+- Configure CORS properly
+- Use environment variables for all secrets
+- Regularly update dependencies
+- Set up proper logging and monitoring
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow TypeScript best practices
+- Write tests for new features
+- Update documentation as needed
+- Follow the existing code style
+- Ensure all tests pass before submitting PR
+
+---
+
+## 📄 License
+
+This project is licensed under the UNLICENSED license - see the `package.json` file for details.
+
+---
+
+## 👤 Author
+
+**Your Name**
+
+- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: your.email@example.com
+
+---
+
+## 🙏 Acknowledgments
+
+- [NestJS](https://nestjs.com/) - Progressive Node.js framework
+- [Next.js](https://nextjs.org/) - React framework
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [Material-UI](https://mui.com/) - React component library
+- [Stripe](https://stripe.com/) - Payment processing
+
+---
+
+<div align="center">
+
+**⭐ If you found this project helpful, please consider giving it a star! ⭐**
+
+Made with ❤️ using NestJS and Next.js
+
+</div>
