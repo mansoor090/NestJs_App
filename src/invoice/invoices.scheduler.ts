@@ -9,10 +9,10 @@ export class InvoicesScheduler {
   constructor(private invoicesService: InvoicesService) {}
 
   /**
-   * Run every 2 minutes for testing
+   * Run every 1st of every month for testing
    * In production, change to: @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
    */
-  @Cron('*/2 * * * *')
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async handleInvoiceGeneration() {
     this.logger.log('Running scheduled invoice generation...');
     try {
@@ -23,7 +23,7 @@ export class InvoicesScheduler {
     }
   }
 
-  @Cron('0 0 5 * *')
+  @Cron('0 0 10 * *')
   async handlePendingBillSurcharge() {
     this.logger.log('Running scheduled Surcharge generation...');
     try {
