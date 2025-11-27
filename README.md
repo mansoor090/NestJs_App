@@ -351,6 +351,15 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "password123"
 }
+
+
+// for Testing
+email: junaid@gmail.com
+password: Admin123$
+
+for testing stripe:
+Use stripe testcards e.g 4242 4242 4242 4242
+
 ```
 
 **Response:**
