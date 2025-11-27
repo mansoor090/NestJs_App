@@ -112,11 +112,6 @@ This is a comprehensive **Housing Society Management & Billing System** designed
 - **HTTP Client**: Axios
 - **Payment**: Stripe React components
 
-### Development Tools
-- **Linting**: ESLint
-- **Formatting**: Prettier
-- **Testing**: Jest
-- **Build Tool**: SWC
 
 ---
 
@@ -171,7 +166,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <your-repository-url>
-cd project_test
+cd yourfoldername
 ```
 
 ### 2. Install Dependencies
@@ -340,47 +335,6 @@ npm run start
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-
----
-
-## 📁 Project Structure
-
-```
-project_test/
-├── src/                          # Backend source code
-│   ├── auth/                    # Authentication module
-│   ├── user/                    # User management module
-│   ├── house/                   # House management module
-│   ├── invoice/                 # Invoice management module
-│   ├── transactions/            # Payment processing module
-│   ├── stripe/                  # Stripe integration module
-│   ├── Utils/                   # Utility functions
-│   ├── app.module.ts            # Root application module
-│   ├── main.ts                  # Application entry point
-│   └── prisma.service.ts        # Prisma service
-├── frontend/                    # Frontend application
-│   ├── app/                     # Next.js app directory
-│   │   ├── dashboard/          # Admin dashboard
-│   │   ├── user-dashboard/      # Resident dashboard
-│   │   ├── login/              # Login page
-│   │   ├── layout.tsx          # Root layout
-│   │   └── page.tsx             # Home page
-│   ├── components/              # React components
-│   │   ├── Navbar.tsx          # Navigation component
-│   │   ├── loader.tsx           # Loading component
-│   │   └── ThemeProvider.tsx    # Theme provider
-│   ├── hooks/                   # Custom hooks
-│   │   ├── useAuth.ts          # Authentication hook
-│   │   └── useNavigationLoader.tsx
-│   └── lib/                     # Utilities
-│       ├── api.ts               # API client configuration
-│       └── emotion-registry.tsx
-├── prisma/                      # Database
-│   ├── migrations/             # Migration files
-│   ├── schema.prisma           # Prisma schema
-│   └── seed.ts                 # Database seeder
-└── package.json                 # Root package.json
-```
 
 ---
 
@@ -600,34 +554,6 @@ Content-Type: application/json
 
 ---
 
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-npm run test
-```
-
-### E2E Tests
-
-```bash
-npm run test:e2e
-```
-
-### Test Coverage
-
-```bash
-npm run test:cov
-```
-
-### Test Structure
-
-- Unit tests: `*.spec.ts` files alongside source files
-- E2E tests: Located in `test/` directory
-- Test configuration: `jest.config.js` and `test/jest-e2e.json`
-
----
-
 ## 🚢 Deployment
 
 ### Environment Setup
@@ -693,18 +619,11 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
-
-This project is licensed under the UNLICENSED license - see the `package.json` file for details.
-
----
-
 ## 👤 Author
 
-**Your Name**
+Mansoor Ahmad Khan
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@mansoor090](https://github.com/mansoor090)
 
 ---
 
