@@ -151,10 +151,14 @@ export default function UserDashboardPage() {
       // If both are selected, don't send itemType (show all)
 
       const data = await invoiceAPI.getUserInvoicesPaginated(params.toString())
-      setInvoices(data.items)
-      setTotalCount(data.total)
+      // Ensure data.items is always an array
+      setInvoices(Array.isArray(data.items) ? data.items : [])
+      setTotalCount(data.total || 0)
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch invoices')
+      // Reset to empty array on error
+      setInvoices([])
+      setTotalCount(0)
     } finally {
       setLoading(false)
     }
@@ -165,16 +169,22 @@ export default function UserDashboardPage() {
       setLoading(true)
       setError('')
       const data = await userHousesAPI.getUserHouses()
-      setHouses(data)
+      // Ensure data is always an array
+      setHouses(Array.isArray(data) ? data : [])
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch houses')
+      // Reset to empty array on error
+      setHouses([])
     } finally {
       setLoading(false)
     }
   }
 
   const calculateInvoiceTotal = (invoice: Invoice): number => {
-    return invoice.items.reduce((sum, item) => sum + item.amount, 0)
+    if (!invoice.items || !Array.isArray(invoice.items)) {
+      return 0
+    }
+    return invoice.items.reduce((sum, item) => sum + (item.amount || 0), 0)
   }
 
   const handlePayment = async (invoice: Invoice) => {
@@ -200,13 +210,16 @@ export default function UserDashboardPage() {
   }
 
   const getPaymentStatus = (invoice: Invoice): { label: string; color: 'success' | 'warning' | 'error' } => {
-    if (invoice.transaction?.status === 'COMPLETED') {
+    if (!invoice || !invoice.transaction) {
+      return { label: 'Unpaid', color: 'error' }
+    }
+    if (invoice.transaction.status === 'COMPLETED') {
       return { label: 'Paid', color: 'success' }
     }
-    if (invoice.transaction?.status === 'PENDING') {
+    if (invoice.transaction.status === 'PENDING') {
       return { label: 'Pending', color: 'warning' }
     }
-    if (invoice.transaction?.status === 'FAILED') {
+    if (invoice.transaction.status === 'FAILED') {
       return { label: 'Failed', color: 'error' }
     }
     return { label: 'Unpaid', color: 'error' }
@@ -214,9 +227,12 @@ export default function UserDashboardPage() {
 
   // Get unique house numbers from houses (for filter dropdown)
   const uniqueHouseNos = useMemo(() => {
-    // For invoices tab, we'll get house numbers from houses
-    // For better UX, you might want to fetch all unique house numbers separately
-    return houses.map((house) => house.houseNo).sort()
+    if (!houses || !Array.isArray(houses)) return []
+    return houses
+      .filter((house) => house && house.houseNo)
+      .map((house) => house.houseNo)
+      .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+      .sort()
   }, [houses])
 
   // Get unique months - generate last 12 months for filter dropdown
@@ -233,12 +249,14 @@ export default function UserDashboardPage() {
 
   // Filter houses based on house number (client-side for houses tab)
   const filteredHouses = useMemo(() => {
+    if (!houses || !Array.isArray(houses)) return []
     if (!selectedHouseNo) return houses
-    return houses.filter((house) => house.houseNo === selectedHouseNo)
+    return houses.filter((house) => house && house.houseNo === selectedHouseNo)
   }, [houses, selectedHouseNo])
 
   // Paginated houses (only paginate if > 10 items) - client-side for houses
   const paginatedHouses = useMemo(() => {
+    if (!filteredHouses || !Array.isArray(filteredHouses)) return []
     if (filteredHouses.length <= 10) return filteredHouses
     const startIndex = page * rowsPerPage
     return filteredHouses.slice(startIndex, startIndex + rowsPerPage)
@@ -248,12 +266,14 @@ export default function UserDashboardPage() {
   const totalPages = useMemo(() => {
     if (activeTab === 0) {
       // Server-side pagination for invoices
-      return Math.ceil(totalCount / rowsPerPage)
+      const count = totalCount || 0
+      return count > 0 ? Math.ceil(count / rowsPerPage) : 0
     } else {
       // Client-side pagination for houses
-      return Math.ceil(filteredHouses.length / rowsPerPage)
+      const count = filteredHouses?.length || 0
+      return count > 0 ? Math.ceil(count / rowsPerPage) : 0
     }
-  }, [activeTab, totalCount, filteredHouses.length, rowsPerPage])
+  }, [activeTab, totalCount, filteredHouses, rowsPerPage])
 
   // Clear all filters
   const clearFilters = () => {
@@ -420,19 +440,26 @@ export default function UserDashboardPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {invoices.length === 0 ? (
+                  {(!invoices || invoices.length === 0) ? (
                     <TableRow>
                       <TableCell colSpan={6} align="center">
-                        {hasActiveFilters ? 'No invoices match the selected filters' : 'No invoices found'}
+                        {loading
+                          ? 'Loading...'
+                          : hasActiveFilters
+                            ? 'No invoices match the selected filters'
+                            : 'No invoices found'
+                        }
                       </TableCell>
                     </TableRow>
                   ) : (
                     invoices.map((invoice) => {
+                      if (!invoice) return null
+
                       const total = calculateInvoiceTotal(invoice)
                       const paymentStatus = getPaymentStatus(invoice)
                       return (
                         <TableRow key={invoice.id}>
-                          <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>{invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
                           <TableCell>{invoice.house?.houseNo || 'N/A'}</TableCell>
                           <TableCell>${total.toFixed(2)}</TableCell>
                           <TableCell>
@@ -447,26 +474,30 @@ export default function UserDashboardPage() {
                               </AccordionSummary>
                               <AccordionDetails>
                                 <Box>
-                                  {invoice.items?.map((item) => (
-                                    <Box
-                                      key={item.id}
-                                      sx={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        mb: 1,
-                                        p: 1,
-                                        bgcolor: 'grey.100',
-                                        borderRadius: 1,
-                                      }}
-                                    >
-                                      <Typography variant="body2">
-                                        {item.productType === 'MONTHLY_BILL' ? 'Monthly Bill' : 'Late Surcharge'}
-                                      </Typography>
-                                      <Typography variant="body2" fontWeight="bold">
-                                        ${item.amount.toFixed(2)}
-                                      </Typography>
-                                    </Box>
-                                  )) || <Typography variant="body2">No items</Typography>}
+                                  {invoice.items && invoice.items.length > 0 ? (
+                                    invoice.items.map((item) => (
+                                      <Box
+                                        key={item.id}
+                                        sx={{
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          mb: 1,
+                                          p: 1,
+                                          bgcolor: 'grey.100',
+                                          borderRadius: 1,
+                                        }}
+                                      >
+                                        <Typography variant="body2">
+                                          {item.productType === 'MONTHLY_BILL' ? 'Monthly Bill' : 'Late Surcharge'}
+                                        </Typography>
+                                        <Typography variant="body2" fontWeight="bold">
+                                          ${(item.amount || 0).toFixed(2)}
+                                        </Typography>
+                                      </Box>
+                                    ))
+                                  ) : (
+                                    <Typography variant="body2">No items</Typography>
+                                  )}
                                 </Box>
                               </AccordionDetails>
                             </Accordion>
@@ -493,18 +524,18 @@ export default function UserDashboardPage() {
             </TableContainer>
 
             {/* Pagination - only show if more than 10 items */}
-            {totalCount > 10 && (
+            {totalCount > 10 && totalPages > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
                 <Pagination
                   count={totalPages}
-                  page={page + 1} // Material-UI uses 1-indexed pages
-                  onChange={(event, value) => setPage(value - 1)} // Convert back to 0-indexed
+                  page={Math.min(page + 1, totalPages)} // Material-UI uses 1-indexed pages, ensure page doesn't exceed total
+                  onChange={(event, value) => setPage(Math.max(0, value - 1))} // Convert back to 0-indexed, ensure non-negative
                   color="primary"
                   showFirstButton
                   showLastButton
                 />
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  Showing {page * rowsPerPage + 1} - {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} invoices
+                  Showing {Math.max(1, page * rowsPerPage + 1)} - {Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount} invoices
                 </Typography>
               </Box>
             )}
@@ -515,43 +546,51 @@ export default function UserDashboardPage() {
         {activeTab === 1 && (
           <>
             <Grid container spacing={3}>
-              {paginatedHouses.length === 0 ? (
+              {(!paginatedHouses || paginatedHouses.length === 0) ? (
                 <Grid size={{ xs: 12 }}>
                   <Alert severity="info">
-                    {hasActiveFilters ? 'No houses match the selected filters' : 'No houses found'}
+                    {loading
+                      ? 'Loading...'
+                      : hasActiveFilters
+                        ? 'No houses match the selected filters'
+                        : 'No houses found'
+                    }
                   </Alert>
                 </Grid>
               ) : (
-                paginatedHouses.map((house) => (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={house.id}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" component="h2" gutterBottom>
-                          House #{house.houseNo}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Created: {new Date(house.createdAt).toLocaleDateString()}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))
+                paginatedHouses.map((house) => {
+                  if (!house) return null
+                  return (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={house.id}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="h6" component="h2" gutterBottom>
+                            House #{house.houseNo}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Created: {house.createdAt ? new Date(house.createdAt).toLocaleDateString() : 'N/A'}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )
+                })
               )}
             </Grid>
 
             {/* Pagination - only show if more than 10 items */}
-            {filteredHouses.length > 10 && (
+            {filteredHouses && filteredHouses.length > 10 && totalPages > 0 && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
                 <Pagination
                   count={totalPages}
-                  page={page + 1}
-                  onChange={(event, value) => setPage(value - 1)}
+                  page={Math.min(page + 1, totalPages)}
+                  onChange={(event, value) => setPage(Math.max(0, value - 1))}
                   color="primary"
                   showFirstButton
                   showLastButton
                 />
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  Showing {page * rowsPerPage + 1} - {Math.min((page + 1) * rowsPerPage, filteredHouses.length)} of {filteredHouses.length} houses
+                  Showing {Math.max(1, page * rowsPerPage + 1)} - {Math.min((page + 1) * rowsPerPage, filteredHouses.length)} of {filteredHouses.length} houses
                 </Typography>
               </Box>
             )}
