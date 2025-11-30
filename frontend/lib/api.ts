@@ -111,6 +111,10 @@ export const invoiceAPI = {
       const response = await api.get('/user/invoices')
       return response.data
     },
+    getUserInvoicesPaginated: async (params: string) => {
+      const response = await api.get(`/user/invoices?${params}`)
+      return response.data
+    },
     getInvoiceById: async (id: string) => {
       const response = await api.get(`/user/invoices/${id}`)
       return response.data

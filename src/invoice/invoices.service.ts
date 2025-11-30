@@ -252,6 +252,95 @@ export class InvoicesService {
   }
 
   /**
+   * Get paginated invoices for a specific user with filters
+   */
+  async getUserInvoicesPaginated(
+    userId: string,
+    options: {
+      page: number;
+      limit: number;
+      houseNo?: string;
+      month?: string;
+      itemType?: string;
+    },
+  ) {
+    const skip = (options.page - 1) * options.limit;
+
+    // Build where clause with filters
+    const where: any = { userId };
+
+    // Filter by house number
+    if (options.houseNo) {
+      where.house = {
+        houseNo: options.houseNo,
+      };
+    }
+
+    // Filter by month (format: "2024-01")
+    if (options.month) {
+      const [year, monthNum] = options.month.split('-');
+      const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(monthNum), 1);
+
+      where.createdAt = {
+        gte: startDate,
+        lt: endDate,
+      };
+    }
+
+    // Filter by item type (if invoice has items of this type)
+    if (options.itemType) {
+      where.items = {
+        some: {
+          productType: options.itemType as ProductType,
+        },
+      };
+    }
+
+    // Get filtered and paginated results
+    const [items, total] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where,
+        skip,
+        take: options.limit,
+        include: {
+          house: {
+            select: {
+              id: true,
+              houseNo: true,
+            },
+          },
+          items: {
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
+          transaction: {
+            select: {
+              id: true,
+              status: true,
+              amount: true,
+              completedAt: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.invoice.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: options.page,
+      limit: options.limit,
+      totalPages: Math.ceil(total / options.limit),
+    };
+  }
+
+  /**
    * Get a single invoice by ID (only if it belongs to the user)
    */
   async getInvoiceById(invoiceId: string, userId: string) {

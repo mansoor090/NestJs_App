@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Req, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
@@ -13,11 +13,24 @@ export class InvoicesController {
   constructor(private invoicesService: InvoicesService) {}
 
   @Get()
-  async getUserInvoices(@Req() req: Request) {
+  async getUserInvoices(
+    @Req() req: Request,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('houseNo') houseNo?: string,
+    @Query('month') month?: string,
+    @Query('itemType') itemType?: string,
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const userId = (req.user as any).id;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return this.invoicesService.getUserInvoices(userId);
+    return this.invoicesService.getUserInvoicesPaginated(userId, {
+      page,
+      limit,
+      houseNo,
+      month,
+      itemType,
+    });
   }
 
   @Get(':id')
