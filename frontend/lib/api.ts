@@ -128,3 +128,24 @@ export const userHousesAPI = {
       return response.data
     },
   }
+
+// Transaction API (Admin only)
+export const transactionAPI = {
+    getAll: async () => {
+      const response = await api.get('/admin/transactions/all')
+      return response.data
+    },
+    delete: async (id: string) => {
+      const response = await api.delete('/admin/transactions/delete', {
+        data: { id },
+      })
+      return response.data
+    },
+    updateStatus: async (id: string, status: 'PENDING' | 'COMPLETED' | 'FAILED') => {
+      const response = await api.put('/admin/transactions/update-status', {
+        id,
+        status,
+      })
+      return response.data
+    },
+  }

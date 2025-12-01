@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { debug } from 'node:console';
 import { PrismaService } from 'src/prisma.service';
 import { StripeService } from 'src/stripe/stripe.service';
+import { TransactionStatus } from '@prisma/client';
+import Stripe from 'stripe';
 
 @Injectable()
 export class TransactionsService {
@@ -57,7 +58,7 @@ export class TransactionsService {
           throw new Error('Payment session already completed');
         }
         // If session is expired or closed, we'll create a new one below
-      } catch (error) {
+      } catch {
         // Session doesn't exist or is invalid, create new one
         console.log('Existing session not found or invalid, creating new one');
       }
@@ -90,10 +91,18 @@ export class TransactionsService {
     };
   }
 
-  async handleWebhook(event: any) {
+  async handleWebhook(event: Stripe.Event) {
     if (event.type === 'checkout.session.completed') {
+      // TypeScript narrows the type after the type check
       const session = event.data.object;
-      const invoiceId = session.metadata.invoiceId;
+      // Access metadata with proper type checking
+      const invoiceId =
+        'metadata' in session && session.metadata && 'invoiceId' in session.metadata
+          ? session.metadata.invoiceId
+          : undefined;
+      if (!invoiceId || typeof invoiceId !== 'string') {
+        throw new Error('Invoice ID not found in webhook metadata');
+      }
       console.log('I was here');
       // Update transaction status
       await this.prisma.transaction.update({
@@ -104,5 +113,60 @@ export class TransactionsService {
         },
       });
     }
+  }
+
+  async getAllTransactions() {
+    return this.prisma.transaction.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        invoice: {
+          include: {
+            house: {
+              select: {
+                id: true,
+                houseNo: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async deleteTransaction(id: string) {
+    return this.prisma.transaction.delete({
+      where: { id },
+    });
+  }
+
+  async updateTransactionStatus(id: string, status: TransactionStatus) {
+    const updateData: {
+      status: TransactionStatus;
+      completedAt?: Date | null;
+    } = {
+      status,
+    };
+
+    // If marking as COMPLETED, set completedAt
+    if (status === 'COMPLETED') {
+      updateData.completedAt = new Date();
+    } else {
+      // If changing from COMPLETED to another status, clear completedAt
+      updateData.completedAt = null;
+    }
+
+    return this.prisma.transaction.update({
+      where: { id },
+      data: updateData,
+    });
   }
 }

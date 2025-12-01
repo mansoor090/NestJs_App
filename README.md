@@ -354,8 +354,8 @@ Content-Type: application/json
 
 
 // for Testing
-email: junaid@gmail.com
-password: Admin123$
+email: testresident@gmail.com
+password: Test123$$
 
 for testing stripe:
 Use stripe testcards e.g 4242 4242 4242 4242

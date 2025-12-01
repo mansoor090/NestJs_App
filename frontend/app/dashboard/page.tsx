@@ -29,10 +29,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Autocomplete,
 } from '@mui/material'
-import { Edit, Delete, Add } from '@mui/icons-material'
+import { Edit, Delete, Add, CheckCircle } from '@mui/icons-material'
 import { useAuth } from '@/hooks/useAuth'
-import { userAPI, houseAPI } from '@/lib/api'
+import { userAPI, houseAPI, transactionAPI } from '@/lib/api'
 import Navbar from '@/components/Navbar'
 
 interface User {
@@ -57,12 +58,37 @@ interface House {
   }
 }
 
+interface Transaction {
+  id: string
+  userId: string
+  invoiceId: string
+  status: 'PENDING' | 'COMPLETED' | 'FAILED'
+  amount: number
+  stripeSessionId: string | null
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+  }
+  invoice: {
+    id: string
+    house: {
+      id: string
+      houseNo: string
+    }
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const { user, loading: authLoading, isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState(0)
   const [users, setUsers] = useState<User[]>([])
   const [houses, setHouses] = useState<House[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -78,6 +104,14 @@ export default function DashboardPage() {
   const [editHouseDialogOpen, setEditHouseDialogOpen] = useState(false)
   const [deleteHouseDialogOpen, setDeleteHouseDialogOpen] = useState(false)
   const [selectedHouse, setSelectedHouse] = useState<House | null>(null)
+
+  // Transaction Dialog states
+  const [deleteTransactionDialogOpen, setDeleteTransactionDialogOpen] = useState(false)
+  const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+
+  // Transaction Filter states
+  const [selectedUserId, setSelectedUserId] = useState<string>('')
 
   // User Form states
   const [userFormData, setUserFormData] = useState({
@@ -109,9 +143,13 @@ export default function DashboardPage() {
     if (isAuthenticated && user?.role === 'ADMIN') {
       if (activeTab === 0) {
         fetchUsers()
-      } else {
+      } else if (activeTab === 1) {
         fetchHouses()
         // Also fetch users for the dropdown in house forms
+        fetchUsers()
+      } else if (activeTab === 2) {
+        fetchTransactions()
+        // Also fetch users for the filter dropdown
         fetchUsers()
       }
     }
@@ -138,6 +176,19 @@ export default function DashboardPage() {
       setHouses(data)
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch houses')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      const data = await transactionAPI.getAll()
+      setTransactions(data)
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to fetch transactions')
     } finally {
       setLoading(false)
     }
@@ -339,6 +390,55 @@ export default function DashboardPage() {
     }
   }
 
+  // Transaction handlers
+  const handleDeleteTransactionOpen = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setDeleteTransactionDialogOpen(true)
+  }
+
+  const handleDeleteTransactionClose = () => {
+    setDeleteTransactionDialogOpen(false)
+    setSelectedTransaction(null)
+  }
+
+  const handleDeleteTransaction = async () => {
+    if (!selectedTransaction) return
+
+    try {
+      setError('')
+      await transactionAPI.delete(selectedTransaction.id)
+      setSuccess('Transaction deleted successfully!')
+      handleDeleteTransactionClose()
+      fetchTransactions()
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete transaction')
+    }
+  }
+
+  const handleMarkPaidOpen = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setMarkPaidDialogOpen(true)
+  }
+
+  const handleMarkPaidClose = () => {
+    setMarkPaidDialogOpen(false)
+    setSelectedTransaction(null)
+  }
+
+  const handleMarkPaid = async () => {
+    if (!selectedTransaction) return
+
+    try {
+      setError('')
+      await transactionAPI.updateStatus(selectedTransaction.id, 'COMPLETED')
+      setSuccess('Transaction marked as paid successfully!')
+      handleMarkPaidClose()
+      fetchTransactions()
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update transaction status')
+    }
+  }
+
   if (authLoading || loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -359,11 +459,12 @@ export default function DashboardPage() {
           <Typography variant="h4" component="h1">
             Management Dashboard
           </Typography>
-          {activeTab === 0 ? (
+          {activeTab === 0 && (
             <Button variant="contained" startIcon={<Add />} onClick={handleCreateUserOpen}>
               Add New User
             </Button>
-          ) : (
+          )}
+          {activeTab === 1 && (
             <Button variant="contained" startIcon={<Add />} onClick={handleCreateHouseOpen}>
               Add New House
             </Button>
@@ -374,6 +475,7 @@ export default function DashboardPage() {
           <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
             <Tab label="User" />
             <Tab label="House" />
+            <Tab label="Transactions" />
           </Tabs>
         </Box>
 
@@ -471,6 +573,125 @@ export default function DashboardPage() {
               </TableBody>
             </Table>
           </TableContainer>
+        )}
+
+        {/* Transactions Tab */}
+        {activeTab === 2 && (
+          <>
+            {/* Filter Section */}
+            <Paper sx={{ p: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="h6">Filter by User</Typography>
+                <Autocomplete
+                  size="small"
+                  options={users}
+                  getOptionLabel={(option) => `${option.name} (${option.email})`}
+                  value={users.find((u) => u.id === selectedUserId) || null}
+                  onChange={(event, newValue) => {
+                    setSelectedUserId(newValue ? newValue.id : '')
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Search User" placeholder="Type to search..." />
+                  )}
+                  sx={{ minWidth: 300 }}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                />
+                {selectedUserId && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => setSelectedUserId('')}
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </Box>
+            </Paper>
+
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Transaction ID</TableCell>
+                    <TableCell>User</TableCell>
+                    <TableCell>House Number</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Created At</TableCell>
+                    <TableCell>Completed At</TableCell>
+                    <TableCell align="right">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(() => {
+                    const filteredTransactions = selectedUserId
+                      ? transactions.filter((t) => t.userId === selectedUserId)
+                      : transactions
+
+                    if (filteredTransactions.length === 0) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center">
+                            {selectedUserId
+                              ? 'No transactions found for selected user'
+                              : 'No transactions found'}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    }
+
+                    return filteredTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{transaction.id.substring(0, 8)}...</TableCell>
+                        <TableCell>
+                          {transaction.user.name} ({transaction.user.email})
+                        </TableCell>
+                        <TableCell>{transaction.invoice.house.houseNo}</TableCell>
+                        <TableCell>${transaction.amount.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={transaction.status}
+                            color={
+                              transaction.status === 'COMPLETED'
+                                ? 'success'
+                                : transaction.status === 'FAILED'
+                                ? 'error'
+                                : 'warning'
+                            }
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {transaction.completedAt
+                            ? new Date(transaction.completedAt).toLocaleDateString()
+                            : '-'}
+                        </TableCell>
+                        <TableCell align="right">
+                          {transaction.status !== 'COMPLETED' && (
+                            <IconButton
+                              color="success"
+                              onClick={() => handleMarkPaidOpen(transaction)}
+                              title="Mark as Paid"
+                            >
+                              <CheckCircle />
+                            </IconButton>
+                          )}
+                          <IconButton
+                            color="error"
+                            onClick={() => handleDeleteTransactionOpen(transaction)}
+                            title="Delete"
+                          >
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  })()}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
         )}
 
         {/* Create User Dialog */}
@@ -659,6 +880,54 @@ export default function DashboardPage() {
             <Button onClick={handleDeleteHouseClose}>Cancel</Button>
             <Button onClick={handleDeleteHouse} color="error" variant="contained">
               Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Transaction Dialog */}
+        <Dialog open={deleteTransactionDialogOpen} onClose={handleDeleteTransactionClose}>
+          <DialogTitle>Delete Transaction</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this transaction?
+              <br />
+              <strong>Transaction ID:</strong> {selectedTransaction?.id.substring(0, 8)}...
+              <br />
+              <strong>Amount:</strong> ${selectedTransaction?.amount.toFixed(2)}
+              <br />
+              <strong>Status:</strong> {selectedTransaction?.status}
+              <br />
+              This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDeleteTransactionClose}>Cancel</Button>
+            <Button onClick={handleDeleteTransaction} color="error" variant="contained">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Mark as Paid Dialog */}
+        <Dialog open={markPaidDialogOpen} onClose={handleMarkPaidClose}>
+          <DialogTitle>Mark Transaction as Paid</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to mark this transaction as paid (COMPLETED)?
+              <br />
+              <strong>Transaction ID:</strong> {selectedTransaction?.id.substring(0, 8)}...
+              <br />
+              <strong>Amount:</strong> ${selectedTransaction?.amount.toFixed(2)}
+              <br />
+              <strong>User:</strong> {selectedTransaction?.user.name} ({selectedTransaction?.user.email})
+              <br />
+              <strong>House:</strong> {selectedTransaction?.invoice.house.houseNo}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleMarkPaidClose}>Cancel</Button>
+            <Button onClick={handleMarkPaid} color="success" variant="contained">
+              Mark as Paid
             </Button>
           </DialogActions>
         </Dialog>
